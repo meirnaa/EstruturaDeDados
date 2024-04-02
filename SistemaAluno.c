@@ -99,6 +99,9 @@ int main() {
         printf("%s", menu);
         scanf("%d", &opcao);
     }
+    
+    free(alunos);
+    return 0;
 }
 
 //🩷 Outras Funções 🩷
