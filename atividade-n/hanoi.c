@@ -1,6 +1,6 @@
 #include "hanoi.h"
 
-//FUNÇÕES PARA PILHA
+//Funções para pilha
 
 Stack* criar(int max){
     Stack* p = (Stack*)malloc(sizeof(Stack));
@@ -99,10 +99,10 @@ int can_pop(Stack* p){
     return res == 0;
 }
 
-//FUNÇÕES PARA HANOI
+//Funções para hanoi
 
-void menu(){
-    char menu[] = "\n \
+void menuFacil(){
+    char menu[] = "\n\n\n \
 ╔═════════════════════════════════════════════════════════════════════════════╗ \n\n \
     Como jogar: \n\n \
     A Torre R nasce completamente cheia de elementos aleatórios(R, G, B). \n \
@@ -116,10 +116,27 @@ void menu(){
     printf("%s", menu);
 }
 
+void menuMedioDificil(){
+    char menu[] = "\n\n\n \
+╔═════════════════════════════════════════════════════════════════════════════╗ \n\n \
+    Como jogar: \n\n \
+    As Torres nascem com elementos aleatórios(R, G, B). \n \
+    Realize operações de movimentação entre as Torres. \n \
+    Exemplo: Operação 'RB' remove elemento de Torre R e leva para Torre B.\n\n \
+    Regras: \n\n \
+    1) Espere a aplicação carregar.\n \
+    2) O jogo encerra quando cada Torre tiver apenas elementos do seu tipo. \n \
+    3) Tente fazer o menor número de movimentos possíveis! \n\n \
+╚═════════════════════════════════════════════════════════════════════════════╝";
+    printf("%s", menu);
+}
+
 char* getOpcao(){
     char* op = (char*)malloc(2 * sizeof(char)); 
     printf("\n\n \
-    Digite o movimento (RG, RB, GR, GB, BR, BG): ");
+    1 - Reiniciar, 2 - Novo jogo, 0 - Sair\n\n\
+     Movimentos -> RG | RB | GR | GB | BR | BG \n\n\
+     >>> "); 
     scanf("%s", op);
 
     while(!opcaoValida(op)){
@@ -135,7 +152,7 @@ char* getOpcao(){
 int opcaoValida(const char* op){
     size_t tam = strlen(op);
 
-    if(tam != 2){
+    if(tam != 2 && tam != 1){
         return 0;
     }
 
@@ -157,7 +174,29 @@ int opcaoValida(const char* op){
         }
     }
 
+    if(op[0] == '1' || op[0] == '2' || op[0] == '0'){
+        return 1;
+    }
+
     return 0;
+}
+
+char getOpcao2(){
+    char op;
+    printf("\n\n \
+    1 - Reiniciar, 2 - Novo jogo, 0 - Sair \n\n\
+     >>> ");
+    scanf(" %c", &op);
+
+    while(!opValida(op)){
+        printf("\n\n \
+   Opção inválida! \n\
+    1 - Reiniciar, 2 - Novo jogo, 0 - Sair \n\n\
+     >>> ");
+        scanf(" %c", &op); 
+    }
+
+    return op;
 }
 
 char decifrarNum(int num){
@@ -169,13 +208,13 @@ char decifrarNum(int num){
     }
 }
 
-Stack* criar_R(){
+//Torres
+Stack* criar_R_NivelF(){
     Stack* R = criar(MAX);
     int max = 2; 
     int min = 0;
     int r = 0, g = 0, b = 0;
   
-    srand(time(NULL));
     for (int i = 0; i < MAX; i++) { 
         int value = rand() % (max - min + 1) + min; 
         if(value == 0) r++;
@@ -186,10 +225,106 @@ Stack* criar_R(){
     }
 
     if(contemTodos(r,g,b) == 0){
-        R = criar_R();
+        R = criar_R_NivelF();
     } 
 
     return R;
+}
+
+Stack* criar_R_NivelM(){
+    Stack* R = criar(MAX);
+    int max = 2; 
+    int min = 0;
+    int r = 0, g = 0, b = 0;
+  
+    for (int i = 0; i < MAX-2; i++) { 
+        int value = rand() % (max - min + 1) + min; 
+        if(value == 0) r++;
+        else if(value == 1) g++;
+        else if(value == 2) b++;
+        char tipo = decifrarNum(value);
+        push(R, tipo); 
+    }
+
+    if(contemTodos(r,g,b) == 0){
+        R = criar_R_NivelM();
+    }
+
+    return R;
+}
+
+Stack* criar_RB_NivelD(){
+    Stack* torre = criar(MAX);
+    int max = 2; 
+    int min = 0;
+    int r = 0, g = 0, b = 0;
+  
+    for (int i = 0; i < MAX-2; i++) { 
+        int value = rand() % (max - min + 1) + min; 
+        if(value == 0) r++;
+        else if(value == 1) g++;
+        else if(value == 2) b++;
+        char tipo = decifrarNum(value);
+        push(torre, tipo); 
+    }
+
+    if(contemTodos(r,g,b) == 0){
+        torre = criar_RB_NivelD();
+    } 
+
+    if(r != 2 && g != 2 && b != 2){
+        torre = criar_RB_NivelD();
+    }
+
+    return torre;
+}
+
+Stack* criar_G_NivelD(){
+    Stack* torre = criar(MAX);
+    int max = 2; 
+    int min = 0;
+    int r = 0, g = 0, b = 0;
+  
+    for (int i = 0; i < MAX-4; i++) { 
+        int value = rand() % (max - min + 1) + min; 
+        if(value == 0) r++;
+        else if(value == 1) g++;
+        else if(value == 2) b++;
+        char tipo = decifrarNum(value);
+        push(torre, tipo); 
+    }
+
+    if(contemTodos(r,g,b) == 0){
+        torre = criar_G_NivelD();
+    } 
+
+    if(r > 3 || g > 3 || b > 3){
+        torre = criar_G_NivelD();
+    }
+
+    return torre;
+}
+
+Stack* criar_GB_NivelM(){
+    Stack* torre = criar(MAX);
+    int max = 2; 
+    int min = 0;
+    int r = 0, g = 0, b = 0;
+  
+    for (int i = 0; i < MAX-4; i++) { 
+        int value = rand() % (max - min + 1) + min; 
+        if(value == 0) r++;
+        else if(value == 1) g++;
+        else if(value == 2) b++;
+        char tipo = decifrarNum(value);
+        push(torre, tipo); 
+    }
+
+    if(r > 2 || g > 2 || b > 2){
+        torre = criar_GB_NivelM();
+    } 
+
+    return torre;
 }
 
 int contemTodos(int r, int g, int b){
@@ -206,11 +341,13 @@ void atualizarTorres(Stack* r, Stack* g, Stack* b, const char* op, int* moviment
 
     if((origem == 'R' && !can_pop(r)) || (origem == 'G' && !can_pop(g)) || (origem == 'B' && !can_pop(b))){
         printf("\n     A Torre %c está vazia!\n", origem);
+        usleep(1200000);
         return;
     }
 
-    if((destino == 'R' && !can_push(r)) || (destino == 'G' && !can_push(g)) || (destino == 'B' && !can_push(b))){
+    if((destino == 'R' && !can_push(r)) || (destino == 'G' && !can_push(g)) || (destino == 'B' && !can_push(b))){   
         printf("\n     A Torre %c está cheia!\n", destino);
+        usleep(1200000);
         return;
     }
 
@@ -296,19 +433,28 @@ Stack* copiarTorre(Stack* p){
     return copia;
 }
 
-int opValida(int op, int men){
-    if(!isdigit(op)){
-        return 0;
-    }
-
-    if(men == 1){
-        return (op == 1) || (op == 2) || (op == 3) || (op == 0);
-    }
-
-    return (op == 1) || (op == 2) || (op == 0);
+int opValida(char op){
+    return (op == '1') || (op == '2') || (op == '0');
 }
 
 void clear_input_buffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
+}
+
+int getNivel(){
+    int nivel;
+    printf("\n\
+    1 - Nível Fácil, 2 - Nível Médio, 3 - Nível Difícil\n\n\
+    Escolha o nível do jogo: ");
+    scanf("%d", &nivel);
+    clear_input_buffer();
+    while(nivel != 1 && nivel != 2 && nivel != 3){
+    printf("\n\n \
+    Opção inválida! \n\n\
+     Escolha o nível do jogo (1, 2, 3): ");
+        scanf("%d", &nivel);
+    }
+
+    return nivel;
 }

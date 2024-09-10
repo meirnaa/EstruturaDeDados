@@ -1,43 +1,76 @@
 #include "hanoi.h"
-static char *opcao = NULL;
+static char* opcao = NULL;
+static char op;
 
 int main(){
     SetConsoleOutputCP(CP_UTF8);
-    Stack* R = criar_R();
-    Stack* RCop = copiarTorre(R);
-    Stack* G = criar(MAX);
-    Stack* B = criar(MAX);
+    srand(time(NULL));
+    int nivel;
     int continuar = 0;
-    int movimentos = 0;
-    int op1 = 5, op2 = 5;
+    int movimentos;
+    int new_game = 1;
+    Stack* R;
+    Stack* G;
+    Stack* B;
+    Stack* RCop;
+    Stack* BCop;
+    Stack* GCop;
 
     while(continuar == 0){
-        if(!(op1 == 1)){
-            printf("\n\n                        ▂▃▄▅▆▇█▓▒░  Hanói RGB  ░▒▓█▇▆▅▄▃▂\n");
-            menu();
+        //Iniciando novo jogo e criando Torres de acordo com o nível
+        if(new_game == 1){
+            printf("\n\n                        ▂▃▄▅▆▇█▓▒░  Hanói RGB  ░▒▓█▇▆▅▄▃▂\n\n\n");
+            nivel = getNivel();
+            switch(nivel)
+            {
+            case 1:
+                menuFacil();
+                R = criar_R_NivelF();
+                RCop = copiarTorre(R);
+                G = criar(MAX);
+                B = criar(MAX);
+                new_game = 0;
+                movimentos = 0;
+                break;
+            
+            case 2:
+                menuMedioDificil();
+                R = criar_R_NivelM();
+                RCop = copiarTorre(R);
+                G = criar_GB_NivelM();
+                GCop = copiarTorre(G);
+                B = criar_GB_NivelM();
+                BCop = copiarTorre(B);
+                new_game = 0;
+                movimentos = 0;
+                break;
+            
+            case 3:
+                menuMedioDificil();
+                R = criar_RB_NivelD();
+                RCop = copiarTorre(R);
+                G = criar_G_NivelD();
+                GCop = copiarTorre(G);
+                B = criar_RB_NivelD();
+                BCop = copiarTorre(B);
+                new_game = 0;
+                movimentos = 0;
+                break;
+            }
         }
+
+        //Mostrando Torres e pedindo primeira decisão
         show(R, G, B, movimentos);
         opcao = getOpcao();
-        atualizarTorres(R, G, B, opcao, &movimentos);
-        continuar = win_game(R, G, B, movimentos);
-
+        
         if(continuar == 0){
-            printf("\n \
-    1 - Continuar jogando \n \
-    2 - Reiniciar \n \
-    3 - Novo jogo \n \
-    0 - Sair \n\n \
-    >>> ");
-            while (scanf("%d", &op1) != 1) {
-                printf("\n        Opção inválida! Digite novamente: ");
-                clear_input_buffer(); 
+            //0 aborta o programa
+            if(opcao[0] == '0'){
+                exit(1);
             }
-
-            while(!opValida(op1, 1)){
-                if(op1 == 1){
-                    break;
-                }
-                else if(op1 == 2){
+            //1 reinicia
+            else if(opcao[0] == '1'){
+                if(nivel == 1){
                     liberar(R);
                     R = copiarTorre(RCop);
                     liberar(G);
@@ -45,50 +78,48 @@ int main(){
                     G = criar(MAX);
                     B = criar(MAX);
                     movimentos = 0;
-                    break;
+                    new_game = 0;
                 }
-                else if(op1 == 3){
+                else if(nivel == 2){
                     liberar(R);
-                    R = criar_R();
-                    liberar(RCop);
-                    RCop = copiarTorre(R);
+                    R = copiarTorre(RCop);
                     liberar(G);
+                    G = copiarTorre(GCop);
                     liberar(B);
-                    G = criar(MAX);
-                    B = criar(MAX);
-                    movimentos = 0;
-                    break;
-                }else if(op1 == 0){
-                    exit(1);
+                    B = copiarTorre(BCop);
+                    movimentos = 0;   
+                    new_game = 0;                 
+                }
+                else if(nivel == 3){
+                    liberar(R);
+                    R = copiarTorre(RCop);
+                    liberar(G);
+                    G = copiarTorre(GCop);
+                    liberar(B);
+                    B = copiarTorre(BCop);
+                    movimentos = 0;  
+                    new_game = 0;                  
                 }
             }
-
-        } else {
-            printf("\n \
-    1 - Novo jogo \n \
-    2 - Reiniciar \n \
-    0 - Sair \n\n \
-    >>> ");
-            while (scanf("%d", &op2) != 1) {
-                printf("\n        Opção inválida! Digite novamente: ");
-                clear_input_buffer(); 
+            //2 inicia novo jogo
+            else if(opcao[0] == '2'){
+                new_game = 1;
             }
+            //atualiza torres com o movimento escolhido e verifica se ganhou
+            else{
+                new_game = 0;
+                atualizarTorres(R, G, B, opcao, &movimentos);
+                continuar = win_game(R, G, B, movimentos);
+            }
+        }
 
-            while(!opValida(op2, 2)){
-                if(op2 == 1){
-                    liberar(R);
-                    R = criar_R();
-                    liberar(RCop);
-                    RCop = copiarTorre(R);
-                    liberar(G);
-                    liberar(B);
-                    G = criar(MAX);
-                    B = criar(MAX);
-                    movimentos = 0;
-                    continuar = 0;
-                    op1 = 5;
-                    break;
-                } else if(op2 == 2){
+        //se ganhou pede op para reiniciar, iniciar novo jogo ou sair
+        if(continuar == 1){
+
+            op = getOpcao2();
+            //Reiniciar
+            if(op == '1'){
+                if(nivel == 1){
                     liberar(R);
                     R = copiarTorre(RCop);
                     liberar(G);
@@ -97,11 +128,39 @@ int main(){
                     B = criar(MAX);
                     movimentos = 0;
                     continuar = 0;
-                    op1 = 5;
-                    break;
-                } else if(op2 == 0){
-                    exit(1);
+                    new_game = 0;
                 }
+                else if(nivel == 2){
+                    liberar(R);
+                    R = copiarTorre(RCop);
+                    liberar(G);
+                    G = copiarTorre(GCop);
+                    liberar(B);
+                    B = copiarTorre(BCop);
+                    movimentos = 0;
+                    continuar = 0;     
+                    new_game = 0;               
+                }
+                else if(nivel == 3){
+                    liberar(R);
+                    R = copiarTorre(RCop);
+                    liberar(G);
+                    G = copiarTorre(GCop);
+                    liberar(B);
+                    B = copiarTorre(BCop);
+                    movimentos = 0;
+                    continuar = 0;     
+                    new_game = 0;               
+                }
+            } 
+            //Novo jogo
+            else if(op == '2'){
+                new_game = 1;
+                continuar = 0;
+            }
+            //Sair
+            else if(op == '0'){
+                exit(1);
             }
         }
     }
